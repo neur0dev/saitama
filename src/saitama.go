@@ -1,4 +1,6 @@
-// killprocess project main.go
+/* Saitama app, kill process by name with one punch
+Developed by lobocode - lobocode@fedoraproject.org */
+
 package main
 
 import (
@@ -16,7 +18,7 @@ import (
 // args holds the commandline args
 var args []string
 
-func findAndKillProcess(path string, info os.FileInfo, err error) error {
+func findAndKillProcessByName(path string, info os.FileInfo, err error) error {
 
 	// We are only interested in files with a path looking like /proc/<pid>/status.
 	if strings.Count(path, "/") == 3 {
@@ -47,31 +49,26 @@ func findAndKillProcess(path string, info os.FileInfo, err error) error {
 
 			switch args[1] {
 			case "--help", "-h":
-				log.Fatalln("\nUsage: saitama [OPTION] <processname>\nKill process with one punch\n\nMandatory arguments\n\n-h  --help	display this help and exit\n-l  --list	list process by name\n-p  --punch <processname> punch process by name")
+				log.Fatalln("\nUsage: saitama <processname>\nKill process with one punch\n\nMandatory arguments\n\n-h  --help	display this help and exit\n-l  --list	list process by name")
 			case "-l", "--list":
 				fmt.Printf("%s\n", processName)
-			case "-p", "--punch":
-				if len(args) == 2 {
-					log.Fatalln("\nMissing operand\nTry 'saitama --help' for more information")
-				} else if processName == args[2] {
+			default:
+				if processName == args[1] {
 
 					proc, _ := os.FindProcess(pid)
 
 					if proc.Kill() != nil {
 						fmt.Printf("\nWarning: This process owner is 'root'\nPlease use 'sudo'\n")
+						return io.EOF
 					} else {
-						fmt.Printf("Killing %s with one punch \n", args[2])
+						fmt.Printf("Killing %s with one punch \n", args[1])
 						fmt.Printf("PID: %d %s %s .\n", pid, processName, oh)
 						proc.Kill()
-						
 
 						// if error
 						return io.EOF
 					}
 				}
-
-			default:
-				log.Fatalln("\nMissing operand\nTry 'saitama --help' for more information")
 			}
 
 		}
@@ -88,7 +85,7 @@ func main() {
 		log.Fatalln("\nSaitama: missing operand\nTry 'saitama --help' for more information")
 	}
 
-	debugCall := filepath.Walk("/proc", findAndKillProcess)
-	fmt.Printf("%s", debugCall)
+	saitamaExec := filepath.Walk("/proc", findAndKillProcessByName)
+	fmt.Printf("%s", saitamaExec)
 
 }
