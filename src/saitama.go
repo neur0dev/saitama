@@ -6,7 +6,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -57,20 +56,19 @@ func findAndKillProcessByName(path string, info os.FileInfo, err error) error {
 
 					proc, _ := os.FindProcess(pid)
 
-					if proc.Kill() != nil {
-						fmt.Printf("\nWarning: This process owner is 'root'\nPlease use 'sudo'\n")
-						return io.EOF
+					if err = proc.Kill(); err != nil {
+						fmt.Printf("Warning: This process owner is 'root'\nPlease use 'sudo'\n")
+						os.Exit(1)
+						//log.Fatal(err)
 					} else {
 						fmt.Printf("Killing %s with one punch \n", args[1])
 						fmt.Printf("PID: %d %s %s .\n", pid, processName, oh)
-						proc.Kill()
-
-						// if error
-						return io.EOF
+						// Execute and exit
+						os.Exit(1)
 					}
 				}
-			}
 
+			}
 		}
 	}
 
